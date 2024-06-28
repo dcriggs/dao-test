@@ -39,6 +39,26 @@ describe("Token", () => {
       .transfer(investor1.address, tokens(200000));
     await transaction.wait();
 
+    transaction = await token
+      .connect(deployer)
+      .transfer(investor2.address, tokens(200000));
+    await transaction.wait();
+
+    transaction = await token
+      .connect(deployer)
+      .transfer(investor3.address, tokens(200000));
+    await transaction.wait();
+
+    transaction = await token
+      .connect(deployer)
+      .transfer(investor4.address, tokens(200000));
+    await transaction.wait();
+
+    transaction = await token
+      .connect(deployer)
+      .transfer(investor5.address, tokens(200000));
+    await transaction.wait();
+
     // Set quorum to > 50% of token total supply e.g. 500000 followed by 18 zeros plus 1
     const DAO = await ethers.getContractFactory("DAO");
     dao = await DAO.deploy(token.address, "500000000000000000000001");
@@ -109,12 +129,6 @@ describe("Token", () => {
             .createProposal("Proposal #1", ether(10), recipient.address)
         ).to.be.reverted;
       });
-
-      /**
-      it("", async () => {
-
-      });
-       */
     });
   });
 
@@ -157,11 +171,82 @@ describe("Token", () => {
 
         await expect(dao.connect(investor1).vote(1)).to.be.reverted;
       });
-      /**
-      it("", async () => {
+    });
+  });
 
+  describe("Governance", () => {
+    let transaction, result;
+
+    describe("Success", () => {
+      beforeEach(async () => {
+        transaction = await dao
+          .connect(investor1)
+          .createProposal("Proposal 1", ether(100), recipient.address);
+        result = await transaction.wait();
+
+        transaction = await dao.connect(investor1).vote(1);
+        result = await transaction.wait();
+
+        transaction = await dao.connect(investor2).vote(1);
+        result = await transaction.wait();
+
+        transaction = await dao.connect(investor3).vote(1);
+        result = await transaction.wait();
+
+        transaction = await dao.connect(investor1).finalizeProposal(1);
+        result = await transaction.wait();
       });
-       */
+
+      it("transfers funds to recipient", async () => {
+        expect(await ethers.provider.getBalance(recipient.address)).to.equal(
+          tokens(10100)
+        );
+      });
+
+      it("updates the proposal to finalized", async () => {
+        const proposal = await dao.proposals(1);
+        expect(proposal.finalized).to.equal(true);
+      });
+
+      it("emits a finalize event", async () => {
+        await expect(transaction).to.emit(dao, "Finalize").withArgs(1);
+      });
+    });
+
+    describe("Failure", () => {
+      beforeEach(async () => {
+        transaction = await dao
+          .connect(investor1)
+          .createProposal("Proposal 1", ether(100), recipient.address);
+        result = await transaction.wait();
+
+        transaction = await dao.connect(investor1).vote(1);
+        result = await transaction.wait();
+
+        transaction = await dao.connect(investor2).vote(1);
+        result = await transaction.wait();
+      });
+
+      it("rejects finalization if quorum is not reached", async () => {
+        await expect(dao.connect(investor1).finalizeProposal(1)).to.be.reverted;
+      });
+
+      it("rejects finalization from a non-holder", async () => {
+        transaction = await dao.connect(investor3).vote(1);
+        result = await transaction.wait();
+
+        await expect(dao.connect(user).finalizeProposal(1)).to.be.reverted;
+      });
+
+      it("rejects proposal if already finalized", async () => {
+        transaction = await dao.connect(investor3).vote(1);
+        result = await transaction.wait();
+
+        transaction = await dao.connect(investor1).finalizeProposal(1);
+        result = await transaction.wait();
+
+        await expect(dao.connect(investor1).finalizeProposal(1)).to.be.reverted;
+      });
     });
   });
 });

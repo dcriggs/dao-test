@@ -8,6 +8,9 @@ contract DAO {
     address public owner;
     Token public token;
     uint256 public quorum;
+    uint256 public proposalCount;
+    mapping(uint256 => Proposal) public proposals;
+    mapping(address => mapping(uint256 => bool)) votes;
 
     struct Proposal {
         uint256 id;
@@ -18,10 +21,6 @@ contract DAO {
         bool finalized;
     }
 
-    uint256 public proposalCount;
-    mapping(uint256 => Proposal) public proposals;
-    mapping(address => mapping(uint256 => bool)) votes;
-
     event Propose(
         uint256 id,
         uint256 amount,
@@ -29,6 +28,7 @@ contract DAO {
         address creator
     );
     event Vote(uint256 id, address holder);
+    event Finalize(uint256 id);
 
     constructor(Token _token, uint256 _quorum) {
         owner = msg.sender;
@@ -74,19 +74,41 @@ contract DAO {
     }
 
     function vote(uint256 _id) external onlyHolder {
-        //Fetch proposal from mapping by id
+        // Fetch proposal from mapping by id
         Proposal storage proposal = proposals[_id];
 
-        //Don't let holders vote twice
+        // Don't let holders vote twice
         require(!votes[msg.sender][_id]);
 
-        //update votes
+        // update votes
         proposal.votes += token.balanceOf(msg.sender);
 
-        //track that user has voted
+        // track that user has voted
         votes[msg.sender][_id] = true;
 
-        //emit event
+        // emit event
         emit Vote(_id, msg.sender);
+    }
+
+    function finalizeProposal(uint256 _id) external onlyHolder {
+        // Fetch proposal from mapping by id
+        Proposal storage proposal = proposals[_id];
+
+        // Ensure proposal is not already finalized
+        require(proposal.finalized == false, "proposal already finalized");
+
+        // Check that proposal has enough votes
+        require(proposal.votes >= quorum, "must reach quorum to finalize proposal");
+
+        // Check that the contract has enough ether
+        require(address(this).balance >= proposal.amount);
+        
+        // Transfer the funds to recipient
+        (bool sent, ) = proposal.recipient.call{value: proposal.amount}("");
+        require(sent);
+
+        // Mark proposal as finalized
+        proposal.finalized = true;
+        emit Finalize(_id);
     }
 }
