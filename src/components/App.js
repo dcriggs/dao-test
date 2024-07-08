@@ -82,6 +82,8 @@ function App() {
           <hr />
           <p className="text-center">
             <strong>Treasury Balance:</strong> {treasuryBalance} ETH
+            <br />
+            <strong>Quorum:</strong> {ethers.utils.formatUnits(quorum, 0)} Votes
           </p>
           <hr />
           <Proposals

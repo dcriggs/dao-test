@@ -15,6 +15,18 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
     setIsLoading(true);
   };
 
+  const downvoteHandler = async (id) => {
+    try {
+      const signer = await provider.getSigner();
+      const transaction = await dao.connect(signer).downvote(id);
+      await transaction.wait();
+    } catch {
+      window.alert("User rejected or transaction reverted");
+    }
+
+    setIsLoading(true);
+  };
+
   const finalizeHandler = async (id) => {
     try {
       const signer = await provider.getSigner();
@@ -52,13 +64,23 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
             <td>{proposal.votes.toString()}</td>
             <td>
               {!proposal.finalized && (
-                <Button
-                  variant="primary"
-                  style={{ width: "100%" }}
-                  onClick={() => voteHandler(proposal.id)}
-                >
-                  Vote
-                </Button>
+                <>
+                  <Button
+                    variant="success"
+                    style={{ width: "100%" }}
+                    onClick={() => voteHandler(proposal.id)}
+                  >
+                    Vote
+                  </Button>
+                  <br />
+                  <Button
+                    variant="danger"
+                    style={{ width: "100%" }}
+                    onClick={() => downvoteHandler(proposal.id)}
+                  >
+                    Downvote
+                  </Button>
+                </>
               )}
             </td>
             <td>

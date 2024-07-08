@@ -109,6 +109,19 @@
         "type": "uint256"
       }
     ],
+    "name": "downvote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_id",
+        "type": "uint256"
+      }
+    ],
     "name": "finalizeProposal",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -171,9 +184,9 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
+        "internalType": "int256",
         "name": "votes",
-        "type": "uint256"
+        "type": "int256"
       },
       {
         "internalType": "bool",
