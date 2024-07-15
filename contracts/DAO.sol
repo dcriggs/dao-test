@@ -52,6 +52,8 @@ contract DAO {
         uint256 _amount,
         address payable _recipient
     ) external onlyHolder {
+        require(bytes(_name).length > 0, "Proposal name cannot be empty");
+        require(bytes(_name).length >= 5, "Proposal name must be at least 5 characters long");
         require(address(this).balance >= _amount, "Insufficient balance in DAO");
 
         proposalCount++;
@@ -105,6 +107,10 @@ contract DAO {
 
         // emit event
         emit Vote(_id, msg.sender);
+    }
+
+    function hasVoted(address user, uint256 proposalId) external view returns (bool) {
+        return votes[user][proposalId];
     }
 
     function finalizeProposal(uint256 _id) external onlyHolder {

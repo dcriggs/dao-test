@@ -3,6 +3,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import { ethers } from "ethers";
+import parseRevertReason from "../functions/functions.js";
 
 const Create = ({ provider, dao, setIsLoading }) => {
   const [name, setName] = useState("");
@@ -10,8 +11,27 @@ const Create = ({ provider, dao, setIsLoading }) => {
   const [address, setAddress] = useState("");
   const [isWaiting, setIsWaiting] = useState(false);
 
+  /**
+  function parseRevertReason(errorMessage) {
+    const regex = /reverted with reason string '([^']+)'/;
+    const match = errorMessage.match(regex);
+  
+    if (match && match[1]) {
+      return match[1];
+    } else {
+      return errorMessage;
+    }
+  }
+     */
+
   const createHandler = async (e) => {
     e.preventDefault();
+
+    //if (name.length < 5) {
+      //window.alert(`User rejected or transaction reverted: \nProposal name must be at least 5 characters long`);
+      //return;
+    //}
+    
     setIsWaiting(true);
 
     try {
@@ -25,11 +45,12 @@ const Create = ({ provider, dao, setIsLoading }) => {
         .connect(signer)
         .createProposal(name, formattedAmount, address);
       await transaction.wait();
-    } catch {
-      window.alert("User rejected or transaction reverted");
+    } catch (error) {
+      window.alert(`User rejected or transaction reverted: \n${parseRevertReason(error.reason)}`);
+    } finally {
+      setIsWaiting(false);
+      setIsLoading(false);
     }
-
-    setIsLoading(true);
   };
 
   return (
