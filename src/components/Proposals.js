@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 
 const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
   const [hasVoted, setHasVoted] = useState({});
+  const [balances, setBalances] = useState({});
   const [loading, setLoading] = useState(true);
 
   const checkIfVoted = async (proposalId) => {
@@ -18,19 +19,34 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
     }
   };
 
+  const fetchBalance = async (address) => {
+    try {
+      const balance = await provider.getBalance(address);
+      return ethers.utils.formatEther(balance);
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+      return "0.0";
+    }
+  };
+
   useEffect(() => {
-    const fetchVotingStatus = async () => {
+    const fetchData = async () => {
       try {
         for (let proposal of proposals) {
           await checkIfVoted(proposal.id);
+          const balance = await fetchBalance(proposal.recipient);
+          setBalances((prevState) => ({
+            ...prevState,
+            [proposal.id]: balance,
+          }));
         }
       } catch (error) {
-        console.error("Error fetching voting status:", error);
+        console.error("Error fetching data:", error);
       }
       setLoading(false);
     };
 
-    fetchVotingStatus();
+    fetchData();
   }, [proposals]);
 
   const voteHandler = async (id) => {
@@ -78,6 +94,7 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
           <th>#</th>
           <th>Proposal Name</th>
           <th>Recipient Address</th>
+          <th>Recipient Balance (ETH)</th>
           <th>Amount</th>
           <th>Status</th>
           <th>Total Votes</th>
@@ -91,6 +108,7 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
             <td>{proposal.id.toString()}</td>
             <td>{proposal.name}</td>
             <td>{proposal.recipient}</td>
+            <td>{balances[proposal.id] || "Loading..."}</td>
             <td>{ethers.utils.formatUnits(proposal.amount, "ether")} ETH</td>
             <td>{proposal.finalized ? "Approved" : "In Progress"}</td>
             <td>{proposal.votes.toString()}</td>
