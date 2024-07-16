@@ -15,6 +15,7 @@ contract DAO {
     struct Proposal {
         uint256 id;
         string name;
+        string description;
         uint256 amount;
         address payable recipient;
         int256 votes;
@@ -28,6 +29,7 @@ contract DAO {
         address creator
     );
     event Vote(uint256 id, address holder);
+    event Downvote(uint256 id, address holder);
     event Finalize(uint256 id);
 
     constructor(Token _token, uint256 _quorum) {
@@ -49,11 +51,14 @@ contract DAO {
 
     function createProposal(
         string memory _name,
+        string memory _description,
         uint256 _amount,
         address payable _recipient
     ) external onlyHolder {
         require(bytes(_name).length > 0, "Proposal name cannot be empty");
         require(bytes(_name).length >= 5, "Proposal name must be at least 5 characters long");
+        require(bytes(_description).length > 0, "Proposal description cannot be empty");
+        require(bytes(_description).length >= 5, "Proposal description must be at least 5 characters long");
         require(address(this).balance >= _amount, "Insufficient balance in DAO");
 
         proposalCount++;
@@ -61,6 +66,7 @@ contract DAO {
         proposals[proposalCount] = Proposal(
             proposalCount,
             _name,
+            _description,
             _amount,
             _recipient,
             0,
@@ -106,7 +112,7 @@ contract DAO {
         votes[msg.sender][_id] = true;
 
         // emit event
-        emit Vote(_id, msg.sender);
+        emit Downvote(_id, msg.sender);
     }
 
     function hasVoted(address user, uint256 proposalId) external view returns (bool) {

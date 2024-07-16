@@ -88,11 +88,12 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
   };
 
   return (
-    <Table striped bordered hover responsive>
+    <Table striped="columns" bordered hover responsive>
       <thead>
         <tr>
           <th>#</th>
           <th>Proposal Name</th>
+          <th>Proposal Description</th>
           <th>Recipient Address</th>
           <th>Recipient Balance (ETH)</th>
           <th>Amount</th>
@@ -107,6 +108,7 @@ const Proposals = ({ provider, dao, proposals, quorum, setIsLoading }) => {
           <tr key={index}>
             <td>{proposal.id.toString()}</td>
             <td>{proposal.name}</td>
+            <td>{proposal.description}</td>
             <td>{proposal.recipient}</td>
             <td>{balances[proposal.id] || "Loading..."}</td>
             <td>{ethers.utils.formatUnits(proposal.amount, "ether")} ETH</td>

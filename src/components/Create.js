@@ -7,31 +7,13 @@ import parseRevertReason from "../functions/functions.js";
 
 const Create = ({ provider, dao, setIsLoading }) => {
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [amount, setAmount] = useState(0);
   const [address, setAddress] = useState("");
   const [isWaiting, setIsWaiting] = useState(false);
 
-  /**
-  function parseRevertReason(errorMessage) {
-    const regex = /reverted with reason string '([^']+)'/;
-    const match = errorMessage.match(regex);
-  
-    if (match && match[1]) {
-      return match[1];
-    } else {
-      return errorMessage;
-    }
-  }
-     */
-
   const createHandler = async (e) => {
     e.preventDefault();
-
-    //if (name.length < 5) {
-      //window.alert(`User rejected or transaction reverted: \nProposal name must be at least 5 characters long`);
-      //return;
-    //}
-    
     setIsWaiting(true);
 
     try {
@@ -43,7 +25,7 @@ const Create = ({ provider, dao, setIsLoading }) => {
 
       const transaction = await dao
         .connect(signer)
-        .createProposal(name, formattedAmount, address);
+        .createProposal(name, description, formattedAmount, address);
       await transaction.wait();
     } catch (error) {
       window.alert(`User rejected or transaction reverted: \n${parseRevertReason(error.reason)}`);
@@ -61,6 +43,12 @@ const Create = ({ provider, dao, setIsLoading }) => {
           placeholder="Enter name"
           className="my-2"
           onChange={(e) => setName(e.target.value)}
+        />
+        <Form.Control
+          type="text"
+          placeholder="Enter description"
+          className="my-2"
+          onChange={(e) => setDescription(e.target.value)}
         />
         <Form.Control
           type="number"

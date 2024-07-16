@@ -23,6 +23,25 @@
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "holder",
+        "type": "address"
+      }
+    ],
+    "name": "Downvote",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
       }
     ],
     "name": "Finalize",
@@ -83,6 +102,11 @@
       {
         "internalType": "string",
         "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_description",
         "type": "string"
       },
       {
@@ -195,6 +219,11 @@
       {
         "internalType": "string",
         "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "description",
         "type": "string"
       },
       {
